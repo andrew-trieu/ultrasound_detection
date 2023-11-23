@@ -1,3 +1,13 @@
+//Includes the Arduino Stepper Library
+#include <Stepper.h>
+
+// Defines the number of steps per rotation
+const int stepsPerRevolution = 2038;
+
+Stepper myStepperX = Stepper(stepsPerRevolution, 8, 10, 9, 11);
+Stepper myStepperX = Stepper(stepsPerRevolution, 4, 6, 5, 7);
+
+
 const int echoPin = 9;
 const int trigPin = 10;
 
@@ -7,7 +17,15 @@ const int trigPin2 = 13;
 float duration1, distance1;
 float duration2, distance2;
 
-float values[2]; 
+int xPos = 0;
+int yPos = 0;
+
+bool movingLeft = false;
+
+void moveLeft();
+void moveRight();
+void moveUp();
+void takeReading(int x, int y, int trigPin, int echoPin);
 
 void setup() {
   pinMode(trigPin, OUTPUT);
@@ -18,34 +36,57 @@ void setup() {
 }
 
 void loop() {
+  while (yPos <= 25) {
+    if movingLeft {
+      moveLeft()
+      xPos--;
+      takeReading()
+      if (xPos == 0) {
+        move_up()
+        yPos++;
+        movingLeft = false
+      }
+    }
+    else {
+      moveRight()
+      xPos++;
+      takeReading()
+      if (xPos == 3) {
+        move_up()
+        yPos++;
+        movingLeft = true
+      }
+    }
+  }
+}
+
+void moveLeft() {
+  myStepperX.setSpeed(8);
+  myStepperX.step(stepsPerRevolution);
+}
+
+void moveRight() {
+  myStepperX.setSpeed(-8);
+  myStepperX.step(stepsPerRevolution);
+}
+
+void moveUp() {
+  myStepperY.setSpeed(8);
+  myStepperY.step(stepsPerRevolution);
+}
+
+void takeReading(int x, int y, int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  duration1 = pulseIn(echoPin, HIGH);
-  distance1 = (duration1*.0343)/2;
-  values[0] = distance1;
-  delay(1000);
-  
-  digitalWrite(trigPin2, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin2, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin2, LOW);
+  float duration = pulseIn(echoPin, HIGH);
+  float distance = (duration1*.0343)/2;
 
-  duration2 = pulseIn(echoPin2, HIGH);
-  distance2 = (duration2*.0343)/2;
-  values[1] = distance2;
-  Serial.print(values[0]);
-  Serial.print(",");
-  Serial.println(values[1]);
-  
-//  Serial.print("0,");
-//  Serial.println(distance1);
-//  delay(1000);  
-//  Serial.print("1,");
-//  Serial.println(distance2);
-//  delay(1000);
+  String output = String(x) + "," String(y) + "," + String(distance);
+
+  Serial.println(output);
+  delay(1000);
 }
