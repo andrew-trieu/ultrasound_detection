@@ -9,24 +9,31 @@ const int stepsPerRevolution = 2038;
 Stepper myStepperX = Stepper(stepsPerRevolution, 8, 10, 9, 11);
 Stepper myStepperY = Stepper(stepsPerRevolution, 4, 6, 5, 7);
 
-const int echoPin = 22;
-const int trigPin = 24;
+const int echoPin1 = 22;
+const int trigPin1 = 24;
+const int echoPin2 = 26;
+const int trigPin2 = 28;
 
 int xPos = -1;
 int yPos = 0;
 
+int prevValue = 0;
+
 bool movingLeft = false;
 
-float duration, distance;
+float duration1, distance1;
+float duration2, distance2;
 
 void moveLeft();
 void moveRight();
 void moveUp();
-void takeReading(int x, int y, int trigPin, int echoPin);
+void takeReading(int x, int y);
 
 void setup() {
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(trigPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
   Serial.begin(9600);
 }
 
@@ -38,11 +45,11 @@ void loop() {
     moveLeft();
     delay(1000);
     xPos--;
-    takeReading(xPos, yPos, trigPin, echoPin);
+    takeReading(xPos, yPos);
     if (xPos == 0) {
       moveUp();
       yPos++;
-      takeReading(xPos, yPos, trigPin, echoPin);
+      takeReading(xPos, yPos);
       movingLeft = false;
     }
   }
@@ -51,11 +58,11 @@ void loop() {
     moveLeft(); // change to move right once we figure out CCW
     delay(1000);
     xPos++;
-    takeReading(xPos, yPos, trigPin, echoPin);
-    if (xPos == 3) {
+    takeReading(xPos, yPos);
+    if (xPos == 4) {
       moveUp();
       yPos++;
-      takeReading(xPos, yPos, trigPin, echoPin);
+      takeReading(xPos, yPos);
       movingLeft = true;
     }
   }
@@ -77,24 +84,29 @@ void moveUp() {
   myStepperY.step(stepsPerRevolution);
 }
 
-void takeReading(int x, int y, int trigPin, int echoPin) {
-  
-  // Serial.println("Taking reading");
-  digitalWrite(trigPin, LOW);
+void takeReading(int x, int y) {
+  digitalWrite(trigPin1, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trigPin1, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin1, LOW);
+  long duration1 = pulseIn(echoPin1, HIGH);
+  int distance1 = duration1 * 0.034 / 2;
 
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration*.0343)/2;
+  // Sensor 2 measurement
+  digitalWrite(trigPin2, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin2, LOW);
+  long duration2 = pulseIn(echoPin2, HIGH);
+  int distance2 = duration2 * 0.034 / 2;
 
-  // String output = String(x) + "," String(y) + "," + String(distance);
-  Serial.print("X position: ");
-  Serial.print(x);
-  Serial.print(", Y position: ");
-  Serial.print(y);
-  Serial.print(", Distance: ");
-  Serial.println(distance);
-  delay(1000);
+  Serial.print("Distance 1: ");
+  Serial.print(distance1);
+  Serial.print(" cm | Distance 2: ");
+  Serial.print(distance2);
+  Serial.println(" cm");
+
+  delay(100); // Delay between readings
 }
