@@ -2,7 +2,8 @@
 #include <Stepper.h>
 
 // Defines the number of steps per rotation
-const int stepsPerRevolution = 2038;
+const int stepsPerRevolution = 200;
+int num_iterations = 0;
 
 // Creates an instance of stepper class
 // Pins entered in sequence IN1-IN3-IN2-IN4 for proper step sequence
@@ -14,12 +15,11 @@ void setup() {
 
 void loop() {
   // Rotate CW slowly at 5 RPM
-  myStepper.setSpeed(8);
+  myStepper.setSpeed(15);
   myStepper.step(stepsPerRevolution);
-  delay(1000);
   
   // Rotate CCW quickly at 10 RPM
-  myStepper.setSpeed(15);
-  myStepper.step(-stepsPerRevolution);
-  delay(1000);
+//  myStepper.setSpeed(15);
+//  myStepper.step(-stepsPerRevolution);
+//  delay(1000);
 }
